@@ -47,7 +47,8 @@ int leituraMatriz(const char *arquivo, Matriz *p)
         return 1;
         /*Não foi possível abrir o arquivo.*/
 
-    fscanf(arq, "%d %d", &p->nlin, &p->ncol);
+    if(fscanf(arq, "%d %d", &p->nlin, &p->ncol) == EOF)
+        return 1;
 
     if(p->nlin <= 0 || p->ncol <= 0)
         return 1;
@@ -58,7 +59,11 @@ int leituraMatriz(const char *arquivo, Matriz *p)
     {
         for(j = 0; j < p->ncol; j++)
         {
-            fscanf(arq, "%f", &p->elemento[i][j]);
+            if(EOF == fscanf(arq, "%f", &p->elemento[i][j]))
+            {
+                puts("ERRO: Matriz é menor do que o informado."); 
+                return 1;
+            }
         }
     }
     fclose(arq);
@@ -104,19 +109,28 @@ float determinante(Matriz *p, int dimensao)
     int col;
     float soma = 0;
     Matriz cof;
+
     if(dimensao > 1)
     {
         /*Percorrendo todos os elementos da primeira linha da matriz.*/
+
         for(col = 0; col < p->ncol; col++)
         {   
             /*Gerando a matriz dos cofatores de cada um dos elementos acessados.*/
+
             matcof(p, &cof, 0, col);
+
             /*Somatório que define o determinante da matriz. A definição do determinante
             de uma matriz é recursiva.*/
-            soma += pow(-1, col + 2)*(p->elemento[0][col])*determinante(&cof, dimensao - 1);
+
+            soma += pow(-1, (double) col + 2)*(p->elemento[0][col])*determinante(&cof, dimensao - 1);
+
             liberaMatriz(&cof);
         }
+
     } else soma = p->elemento[0][0];
+
     /*O determinante de uma matriz 1x1 é o valor de seu único elemento.*/
+
     return soma;
 }
